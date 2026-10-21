@@ -1,15 +1,26 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme.dart';
+import '../../../widgets/line_icon.dart';
 
 /// White 62pt rounded square with a "+" that spins into a check mark while
 /// [onAdd] runs, then settles back.
 class AddButton extends StatefulWidget {
-  const AddButton({super.key, required this.onAdd, this.size = 62});
+  const AddButton({
+    super.key,
+    required this.onAdd,
+    this.size = 62,
+    this.label = 'Add to bag',
+  });
 
   final Future<void> Function() onAdd;
   final double size;
+
+  /// Screen-reader label, e.g. "Add Aloe Vera to bag".
+  final String label;
 
   @override
   State<AddButton> createState() => _AddButtonState();
@@ -21,8 +32,8 @@ class _AddButtonState extends State<AddButton>
     vsync: this,
     duration: const Duration(milliseconds: 380),
   );
-  late final Animation<double> _curve =
-      CurvedAnimation(parent: _c, curve: Curves.easeOutBack, reverseCurve: Curves.easeInCubic);
+  late final Animation<double> _curve = CurvedAnimation(
+      parent: _c, curve: Curves.easeOutBack, reverseCurve: Curves.easeInCubic);
   late final Animation<double> _plusTurns =
       Tween<double>(begin: 0, end: 0.25).animate(_curve);
   late final Animation<double> _checkTurns =
@@ -42,8 +53,8 @@ class _AddButtonState extends State<AddButton>
   Future<void> _handleTap() async {
     if (_busy) return;
     _busy = true;
-    HapticFeedback.lightImpact();
-    _c.forward();
+    unawaited(HapticFeedback.lightImpact());
+    unawaited(_c.forward());
     await widget.onAdd();
     await Future<void>.delayed(const Duration(milliseconds: 900));
     if (mounted) await _c.reverse();
@@ -55,8 +66,9 @@ class _AddButtonState extends State<AddButton>
     final size = widget.size;
     final iconSize = size * 0.5;
     return Semantics(
+      container: true,
       button: true,
-      label: 'Add to bag',
+      label: widget.label,
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -68,7 +80,10 @@ class _AddButtonState extends State<AddButton>
             color: AppColors.white,
             borderRadius: BorderRadius.circular(AppRadii.addButton * size / 62),
             boxShadow: const [
-              BoxShadow(color: Color(0x22000000), blurRadius: 14, offset: Offset(0, 6)),
+              BoxShadow(
+                  color: Color(0x22000000),
+                  blurRadius: 14,
+                  offset: Offset(0, 6)),
             ],
           ),
           child: Stack(
@@ -78,14 +93,24 @@ class _AddButtonState extends State<AddButton>
                 opacity: _plusFade,
                 child: RotationTransition(
                   turns: _plusTurns,
-                  child: Icon(Icons.add_rounded, size: iconSize, color: AppColors.ink),
+                  child: LineIcon(
+                    LineGlyph.plus,
+                    size: iconSize,
+                    color: AppColors.ink,
+                    strokeWidth: 1.8,
+                  ),
                 ),
               ),
               FadeTransition(
                 opacity: _checkFade,
                 child: RotationTransition(
                   turns: _checkTurns,
-                  child: Icon(Icons.check_rounded, size: iconSize, color: AppColors.green),
+                  child: LineIcon(
+                    LineGlyph.check,
+                    size: iconSize,
+                    color: AppColors.green,
+                    strokeWidth: 2.2,
+                  ),
                 ),
               ),
             ],

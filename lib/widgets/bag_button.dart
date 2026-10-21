@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme.dart';
+import '../features/bag/bag_sheet.dart';
 import '../state/providers.dart';
+import 'line_icon.dart';
 import 'round_icon_button.dart';
 
 /// Translucent bag button with a count badge that bumps (elastic) whenever
@@ -43,17 +45,6 @@ class _BagButtonState extends ConsumerState<BagButton>
     super.dispose();
   }
 
-  void _showBag(int count) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(count == 0
-            ? 'Your bag is empty'
-            : '$count ${count == 1 ? 'plant' : 'plants'} in your bag'),
-        duration: const Duration(seconds: 2),
-      ));
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<int>(bagCountProvider, (previous, next) {
@@ -69,11 +60,11 @@ class _BagButtonState extends ConsumerState<BagButton>
         children: [
           RoundIconButton(
             key: widget.anchorKey,
-            icon: Icons.shopping_bag_outlined,
+            icon: LineGlyph.bag,
             semanticLabel: 'Bag, $count items',
             filled: true,
             scale: s,
-            onTap: () => _showBag(count),
+            onTap: () => showBagSheet(context),
           ),
           if (count > 0)
             Positioned(

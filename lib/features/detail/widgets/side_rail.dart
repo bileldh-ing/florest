@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
 import '../../../data/plant.dart';
+import '../../../widgets/line_icon.dart';
 import '../../../widgets/plant_image.dart';
 import 'notch_painter.dart';
 
@@ -118,8 +119,12 @@ class _SideRailState extends State<SideRail> {
                 child: AnimatedOpacity(
                   opacity: last ? 0.25 : 1,
                   duration: AppDurations.fast,
-                  child: Icon(Icons.keyboard_arrow_down_rounded,
-                      size: 40 * s, color: AppColors.ink),
+                  child: LineIcon(
+                    LineGlyph.chevronDown,
+                    size: 34 * s,
+                    color: AppColors.ink,
+                    strokeWidth: 2.2,
+                  ),
                 ),
               ),
             ),
@@ -158,7 +163,13 @@ class _RailThumb extends StatelessWidget {
             scale: selected ? 1.04 : 0.94,
             duration: AppDurations.medium,
             curve: Curves.easeOutBack,
-            child: PlantImage(asset: plant.asset, size: size),
+            child: PlantImage(
+              asset: plant.asset,
+              size: size,
+              shadowColor: selected
+                  ? AppColors.plantShadow
+                  : AppColors.plantShadowOnWhite,
+            ),
           ),
         ),
       ),

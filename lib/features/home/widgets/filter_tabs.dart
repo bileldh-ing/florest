@@ -16,24 +16,34 @@ class FilterTabs extends ConsumerWidget {
     final selected = ref.watch(filterProvider);
     final counts = ref.watch(filterCountsProvider);
     final s = scale;
-    return ColoredBox(
-      color: AppColors.white,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(26 * s, 14 * s, 26 * s, 6 * s),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            for (final f in PlantFilter.values)
-              _Tab(
-                label: f.label,
-                count: counts[f] ?? 0,
-                active: f == selected,
-                scale: s,
-                onTap: () => onSelect(f.index),
+    // Transparent: the badges sit half on the green header, half on white.
+    return Padding(
+      padding: EdgeInsets.fromLTRB(26 * s, 14 * s, 26 * s, 6 * s),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (final f in PlantFilter.values)
+            // Flexible + scaleDown keeps the row intact on narrow phones and
+            // with large accessibility text.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: switch (f) {
+                  PlantFilter.all => Alignment.bottomLeft,
+                  PlantFilter.outdoor => Alignment.bottomCenter,
+                  PlantFilter.indoor => Alignment.bottomRight,
+                },
+                child: _Tab(
+                  label: f.label,
+                  count: counts[f] ?? 0,
+                  active: f == selected,
+                  scale: s,
+                  onTap: () => onSelect(f.index),
+                ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

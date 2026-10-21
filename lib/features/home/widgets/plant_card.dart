@@ -54,8 +54,8 @@ class _PlantCardState extends State<PlantCard> {
     final cardLeft = 66 * s;
     final img = PlantCard.imageSizeFor(s);
     final pop = widget.entrance.drive(
-      Tween<double>(begin: 0.4, end: 1)
-          .chain(CurveTween(curve: const Interval(0.3, 1, curve: Curves.easeOutBack))),
+      Tween<double>(begin: 0.4, end: 1).chain(
+          CurveTween(curve: const Interval(0.3, 1, curve: Curves.easeOutBack))),
     );
 
     return Padding(
@@ -70,7 +70,8 @@ class _PlantCardState extends State<PlantCard> {
             height: cardH,
             child: Semantics(
               button: true,
-              label: '${plant.name}. Double tap for details, long press for care info',
+              label:
+                  '${plant.name}. Double tap for details, long press for care info',
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTapUp: (d) => widget.onOpen(d.globalPosition),
@@ -78,32 +79,37 @@ class _PlantCardState extends State<PlantCard> {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: AppColors.green,
-                    borderRadius:
-                        BorderRadius.horizontal(left: Radius.circular(AppRadii.card * s)),
+                    borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(AppRadii.card * s)),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.only(left: img * 0.5 + 20 * s, right: 22 * s),
+                    padding: EdgeInsets.only(
+                        left: img * 0.5 + 20 * s, right: 22 * s),
                     child: Row(
                       children: [
                         Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                plant.name,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.cardTitle(s),
-                              ),
-                              SizedBox(height: 12 * s),
-                              CareChipsRow(size: 34 * s, gap: 8 * s),
-                            ],
+                          // The card's own label already reads the name.
+                          child: ExcludeSemantics(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  plant.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.cardTitle(s),
+                                ),
+                                SizedBox(height: 12 * s),
+                                CareChipsRow(size: 34 * s, gap: 8 * s),
+                              ],
+                            ),
                           ),
                         ),
                         SizedBox(width: 10 * s),
                         AddButton(
-                          size: 62 * s,
+                          size: 70 * s,
+                          label: 'Add ${plant.name} to bag',
                           onAdd: () => widget.onAdd(_imageRect()),
                         ),
                       ],
@@ -118,7 +124,10 @@ class _PlantCardState extends State<PlantCard> {
             top: (cardH - img) / 2,
             width: img,
             height: img,
+            // Same actions as the card, which already exposes them to
+            // screen readers, so the image stays out of the semantics tree.
             child: GestureDetector(
+              excludeFromSemantics: true,
               onTapUp: (d) => widget.onOpen(d.globalPosition),
               onLongPress: widget.onLongPress,
               child: ScaleTransition(
@@ -126,7 +135,8 @@ class _PlantCardState extends State<PlantCard> {
                 child: Hero(
                   tag: widget.heroTag,
                   flightShuttleBuilder: plantFlightShuttle(plant.asset),
-                  child: PlantImage(key: _imageKey, asset: plant.asset, size: img),
+                  child:
+                      PlantImage(key: _imageKey, asset: plant.asset, size: img),
                 ),
               ),
             ),

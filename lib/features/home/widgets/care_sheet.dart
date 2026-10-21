@@ -43,13 +43,15 @@ class CareSheet extends StatelessWidget {
                 PlantImage(asset: plant.asset, size: 64 * s),
                 SizedBox(width: 16 * s),
                 Expanded(
-                  child: Text(plant.name, style: AppText.cardTitle(s).copyWith(fontSize: 22 * s)),
+                  child: Text(plant.name,
+                      style: AppText.cardTitle(s).copyWith(fontSize: 22 * s)),
                 ),
               ],
             ),
             SizedBox(height: 18 * s),
             _CareRow(kind: CareKind.water, value: plant.water, scale: s),
-            _CareRow(kind: CareKind.temperature, value: plant.temperature, scale: s),
+            _CareRow(
+                kind: CareKind.temperature, value: plant.temperature, scale: s),
             _CareRow(kind: CareKind.light, value: plant.light, scale: s),
           ],
         ),
@@ -59,7 +61,8 @@ class CareSheet extends StatelessWidget {
 }
 
 class _CareRow extends StatelessWidget {
-  const _CareRow({required this.kind, required this.value, required this.scale});
+  const _CareRow(
+      {required this.kind, required this.value, required this.scale});
 
   final CareKind kind;
   final String value;
@@ -78,7 +81,8 @@ class _CareRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(kind.label, style: AppText.sheetLabel(s)),
-              Text(value, style: AppText.cardTitle(s).copyWith(fontSize: 16 * s)),
+              Text(value,
+                  style: AppText.cardTitle(s).copyWith(fontSize: 16 * s)),
             ],
           ),
         ],

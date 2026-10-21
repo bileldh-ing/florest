@@ -1,0 +1,3 @@
+tags:
+  screenshots:
+    skip: "Golden screenshots render with platform fonts; run with --tags screenshots"

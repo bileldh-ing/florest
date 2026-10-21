@@ -32,7 +32,11 @@ class NotchPainter extends CustomPainter {
     canvas
       ..save()
       ..clipRect(Offset.zero & size)
-      ..drawPath(path, Paint()..color = color..isAntiAlias = true)
+      ..drawPath(
+          path,
+          Paint()
+            ..color = color
+            ..isAntiAlias = true)
       ..restore();
   }
 
@@ -70,7 +74,8 @@ Path buildRailPath(Size size, double ny, double nh, double inset, double r) {
   final rn = (nh / 2).clamp(0.0, r);
   path
     ..lineTo(inset + rn, ny)
-    ..arcToPoint(Offset(inset, ny + rn), radius: Radius.circular(rn), clockwise: false)
+    ..arcToPoint(Offset(inset, ny + rn),
+        radius: Radius.circular(rn), clockwise: false)
     ..lineTo(inset, ny + nh - rn)
     ..arcToPoint(Offset(inset + rn, ny + nh),
         radius: Radius.circular(rn), clockwise: false);

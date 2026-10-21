@@ -24,7 +24,8 @@ class RevealRoute<T> extends PageRouteBuilder<T> {
               builder: (context, child) {
                 final done = curved.value >= 1;
                 return ClipPath(
-                  clipper: done ? null : _CircleRevealClipper(center, curved.value),
+                  clipper:
+                      done ? null : _CircleRevealClipper(center, curved.value),
                   clipBehavior: done ? Clip.none : Clip.antiAlias,
                   child: child,
                 );

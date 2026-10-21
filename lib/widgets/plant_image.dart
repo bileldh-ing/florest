@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/widgets.dart';
 
@@ -17,50 +18,65 @@ class PlantImage extends StatelessWidget {
     required this.asset,
     required this.size,
     this.shadow = true,
+    this.shadowColor,
     this.wrapImage,
   });
 
   final String asset;
   final double size;
   final bool shadow;
+
+  /// Defaults to the deep green-black used on green surfaces; pass a lighter
+  /// tint for plants sitting on white.
+  final Color? shadowColor;
   final Widget Function(Widget image)? wrapImage;
 
   @override
   Widget build(BuildContext context) {
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    Widget image = Image(
+    final Widget image = Image(
       image: plantImageProvider(asset, size, dpr),
       fit: BoxFit.contain,
       gaplessPlayback: true,
-      filterQuality: FilterQuality.medium,
       excludeFromSemantics: true,
       errorBuilder: (context, error, stackTrace) =>
           PlaceholderPlant(seed: asset.hashCode),
     );
     final wrap = wrapImage;
-    if (wrap != null) image = wrap(image);
+    final leaves = wrap != null ? wrap(image) : image;
+    final f = (size / 180).clamp(0.4, 1.4);
 
     return SizedBox.square(
       dimension: size,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          // The shadow is the plant's own silhouette, tinted, blurred and
+          // nudged down-left. It never rotates, so it is rasterised once and
+          // cached behind its own RepaintBoundary.
           if (shadow)
             Positioned.fill(
-              child: Center(
-                child: FractionallySizedBox(
-                  widthFactor: 0.7,
-                  heightFactor: 0.7,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [plantShadow(size)],
+              child: RepaintBoundary(
+                child: Transform.translate(
+                  offset: Offset(-7 * f, 12 * f),
+                  child: ImageFiltered(
+                    imageFilter: ui.ImageFilter.blur(
+                      sigmaX: 9 * f,
+                      sigmaY: 9 * f,
+                      tileMode: TileMode.decal,
+                    ),
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        shadowColor ?? AppColors.plantShadow,
+                        BlendMode.srcIn,
+                      ),
+                      child: image,
                     ),
                   ),
                 ),
               ),
             ),
-          Positioned.fill(child: image),
+          Positioned.fill(child: leaves),
         ],
       ),
     );
@@ -138,8 +154,8 @@ class _LeafPainter extends CustomPainter {
           ..save()
           ..translate(c.dx, c.dy)
           ..rotate(angle)
-          ..drawOval(Rect.fromLTWH(len * 0.05, -width / 2, len * 0.95, width),
-              paint)
+          ..drawOval(
+              Rect.fromLTWH(len * 0.05, -width / 2, len * 0.95, width), paint)
           ..restore();
       }
     }

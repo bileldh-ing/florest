@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import 'line_icon.dart';
 
 /// 52pt circle with a 24pt outline icon. [filled] adds the translucent fill.
 /// The tap target is never smaller than 48x48.
@@ -16,7 +17,7 @@ class RoundIconButton extends StatelessWidget {
     this.scale = 1,
   });
 
-  final IconData icon;
+  final LineGlyph icon;
   final String semanticLabel;
   final VoidCallback onTap;
   final bool filled;
@@ -45,7 +46,7 @@ class RoundIconButton extends StatelessWidget {
                 color: filled ? AppColors.translucent : null,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 24 * scale, color: AppColors.cream),
+              child: LineIcon(icon, size: 24 * scale, color: AppColors.cream),
             ),
           ),
         ),

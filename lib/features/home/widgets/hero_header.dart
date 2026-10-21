@@ -40,7 +40,7 @@ class HeroHeader extends StatelessWidget {
   final Widget plant;
   final Widget topBar;
 
-  static double plantSizeFor(double width) => width * 0.48;
+  static double plantSizeFor(double width) => width * 0.51;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class HeroHeader extends StatelessWidget {
     final w = width;
     final plantSize = plantSizeFor(w);
     final shrink = math.max(0.0, expandedHeight - height);
-    final baseTop = topInset + 74 * s;
+    final baseTop = topInset + 58 * s;
     final plantTop = baseTop - shrink * 0.5 + stretch * 0.35;
     final plantScale = (1 - progress * 0.25) * (1 + stretch / 900);
     final plantOpacity = (1 - progress * 1.25).clamp(0.0, 1.0);
@@ -57,7 +57,8 @@ class HeroHeader extends StatelessWidget {
     final miniOpacity = ((progress - 0.55) / 0.45).clamp(0.0, 1.0);
 
     return ClipRRect(
-      borderRadius: BorderRadius.only(bottomRight: Radius.circular(AppRadii.header * s)),
+      borderRadius:
+          BorderRadius.only(bottomRight: Radius.circular(AppRadii.header * s)),
       child: SizedBox(
         height: height,
         width: w,
@@ -68,7 +69,7 @@ class HeroHeader extends StatelessWidget {
             children: [
               Positioned(
                 top: plantTop,
-                right: w * 0.06,
+                right: w * 0.05,
                 width: plantSize,
                 height: plantSize,
                 child: Opacity(
@@ -81,7 +82,7 @@ class HeroHeader extends StatelessWidget {
               ),
               Positioned(
                 left: w * 0.066,
-                bottom: 30 * s,
+                bottom: 58 * s,
                 child: Opacity(
                   opacity: titleOpacity,
                   child: Transform.scale(
@@ -111,7 +112,12 @@ class HeroHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              Positioned(top: topInset, left: 0, right: 0, height: 72 * s, child: topBar),
+              Positioned(
+                  top: topInset,
+                  left: 0,
+                  right: 0,
+                  height: 72 * s,
+                  child: topBar),
             ],
           ),
         ),
@@ -133,7 +139,8 @@ class _EnterPlant extends StatelessWidget {
       animation: enter,
       child: child,
       builder: (context, child) {
-        final t = Curves.easeOutCubic.transform((enter.value / 0.75).clamp(0.0, 1.0));
+        final t =
+            Curves.easeOutCubic.transform((enter.value / 0.75).clamp(0.0, 1.0));
         return Opacity(
           opacity: t,
           child: Transform.rotate(
@@ -160,8 +167,10 @@ class _MaskReveal extends StatelessWidget {
         animation: enter,
         child: child,
         builder: (context, child) {
-          final t = Curves.easeOutCubic.transform(((enter.value - 0.25) / 0.75).clamp(0.0, 1.0));
-          return FractionalTranslation(translation: Offset(0, 1 - t), child: child);
+          final t = Curves.easeOutCubic
+              .transform(((enter.value - 0.25) / 0.75).clamp(0.0, 1.0));
+          return FractionalTranslation(
+              translation: Offset(0, 1 - t), child: child);
         },
       ),
     );

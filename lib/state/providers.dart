@@ -61,12 +61,45 @@ class BagNotifier extends Notifier<List<String>> {
 
   void add(String id) => state = [...state, id];
 
+  /// Removes the most recent copy of [id] (undo, or the bag's minus button).
   void undoAdd(String id) {
     final i = state.lastIndexOf(id);
     if (i < 0) return;
     state = [...state]..removeAt(i);
   }
+
+  void removeOne(String id) => undoAdd(id);
+
+  void removeAll(String id) =>
+      state = state.where((e) => e != id).toList(growable: false);
+
+  void clear() => state = const [];
 }
+
+/// One row of the bag: a plant and how many of it.
+typedef BagLine = ({Plant plant, int quantity});
+
+/// Bag grouped by plant, in the order each plant was first added.
+final bagLinesProvider = Provider<List<BagLine>>((ref) {
+  final ids = ref.watch(bagProvider);
+  final byId = {for (final p in ref.watch(plantsProvider)) p.id: p};
+  final counts = <String, int>{};
+  for (final id in ids) {
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  return [
+    for (final e in counts.entries)
+      if (byId[e.key] case final plant?) (plant: plant, quantity: e.value),
+  ];
+});
+
+final bagTotalCentsProvider = Provider<int>((ref) {
+  var total = 0;
+  for (final line in ref.watch(bagLinesProvider)) {
+    total += line.plant.priceCents * line.quantity;
+  }
+  return total;
+});
 
 final bagProvider =
     NotifierProvider<BagNotifier, List<String>>(BagNotifier.new);

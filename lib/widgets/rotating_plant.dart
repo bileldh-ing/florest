@@ -63,7 +63,9 @@ abstract final class IdleRotation {
 
   /// Same as [of] without registering a dependency (for callbacks).
   static Animation<double> read(BuildContext context) =>
-      context.getInheritedWidgetOfExactType<_IdleRotationInherited>()?.animation ??
+      context
+          .getInheritedWidgetOfExactType<_IdleRotationInherited>()
+          ?.animation ??
       kAlwaysCompleteAnimation;
 }
 

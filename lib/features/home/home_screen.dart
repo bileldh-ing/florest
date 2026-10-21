@@ -12,12 +12,14 @@ import '../../data/plant.dart';
 import '../../state/providers.dart';
 import '../../widgets/bag_button.dart';
 import '../../widgets/fly_to_bag.dart';
+import '../../widgets/line_icon.dart';
 import '../../widgets/plant_image.dart';
 import '../../widgets/reveal_route.dart';
 import '../../widgets/rotating_plant.dart';
 import '../../widgets/round_icon_button.dart';
 import '../../widgets/screen_frame.dart';
 import '../detail/detail_screen.dart';
+import '../search/search_sheet.dart';
 import 'widgets/care_sheet.dart';
 import 'widgets/filter_tabs.dart';
 import 'widgets/hero_header.dart';
@@ -59,7 +61,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
     final w = MediaQuery.sizeOf(context).width;
     final s = w / 390;
-    unawaited(precachePlant(context, AppAssets.heroPlant, HeroHeader.plantSizeFor(w)));
+    unawaited(precachePlant(
+        context, AppAssets.heroPlant, HeroHeader.plantSizeFor(w)));
     for (final p in ref.read(plantsProvider)) {
       unawaited(precachePlant(context, p.asset, PlantCard.imageSizeFor(s)));
     }
@@ -76,7 +79,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void _onListScroll(int index, double pixels) {
     if (index != _page) return;
     // Never mark the header dirty in the middle of a layout pass.
-    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
       SchedulerBinding.instance.addPostFrameCallback((_) {
         if (mounted && index == _page) _offset.value = pixels;
       });
@@ -97,12 +101,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   void _selectTab(int i) {
     if (i == _page) return;
-    _pages.animateToPage(i, duration: AppDurations.slow, curve: Curves.easeOutCubic);
+    _pages.animateToPage(i,
+        duration: AppDurations.slow, curve: Curves.easeOutCubic);
   }
 
   Future<void> _addToBag(Plant plant, Rect from) async {
     if (!MediaQuery.disableAnimationsOf(context)) {
-      await flyToBag(context: context, asset: plant.asset, from: from, target: _bagKey);
+      await flyToBag(
+          context: context, asset: plant.asset, from: from, target: _bagKey);
     }
     if (!mounted) return;
     ref.read(bagProvider.notifier).add(plant.id);
@@ -124,7 +130,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final index = math.max(0, list.indexOf(plant));
     ref.read(selectedPlantProvider.notifier).select(plant.id);
     final width = MediaQuery.sizeOf(context).width;
-    await precachePlant(context, plant.asset, DetailScreen.bigPlantSizeFor(width))
+    await precachePlant(
+            context, plant.asset, DetailScreen.bigPlantSizeFor(width))
         .timeout(const Duration(milliseconds: 150), onTimeout: () {});
     if (!mounted) return;
     await Navigator.of(context).push(RevealRoute<void>(
@@ -133,6 +140,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         plants: list,
         initialIndex: index,
         heroScope: filter.name,
+      ),
+    ));
+  }
+
+  /// Search covers every plant, so the detail screen opens on the full list.
+  Future<void> _search() async {
+    final picked = await showPlantSearch(context);
+    if (picked == null || !mounted) return;
+    final all = ref.read(plantsProvider);
+    ref.read(selectedPlantProvider.notifier).select(picked.id);
+    final size = MediaQuery.sizeOf(context);
+    await Navigator.of(context).push(RevealRoute<void>(
+      center: Offset(size.width - 80, 80),
+      builder: (_) => DetailScreen(
+        plants: all,
+        initialIndex: math.max(0, all.indexOf(picked)),
+        heroScope: 'search',
       ),
     ));
   }
@@ -161,6 +185,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             final expanded = h * 0.48;
             final collapsed = pad.top + 72 * s;
             final tabsH = 96 * s;
+            // The count badges straddle the header's bottom edge, as in the mock.
+            final tabsLift = 40 * s;
             _collapseRange = math.max(1.0, expanded - collapsed);
             final range = _collapseRange;
 
@@ -170,7 +196,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               size: HeroHeader.plantSizeFor(w),
               wrapImage: (image) => RotatingPlant(child: image),
             );
-            final topBar = _HomeTopBar(scale: s, bagKey: _bagKey);
+            final topBar = _HomeTopBar(
+              scale: s,
+              bagKey: _bagKey,
+              onSearch: _search,
+            );
             final tabs = FilterTabs(scale: s, onSelect: _selectTab);
 
             return Stack(
@@ -185,7 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       index: i,
                       filter: PlantFilter.values[i],
                       generation: _generations[i],
-                      topPadding: expanded + tabsH,
+                      topPadding: expanded + tabsH - tabsLift,
                       bottomPadding: pad.bottom + 32 * s,
                       scale: s,
                       initialOffset: math.min(_offset.value, range),
@@ -204,15 +234,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       top: 0,
                       left: 0,
                       right: 0,
-                      height: height + tabsH,
+                      height: height + tabsH - tabsLift,
                       child: Stack(
                         children: [
+                          // White backing so cards scroll *under* the tabs.
                           Positioned(
-                            top: height,
+                            top: height - tabsLift,
                             left: 0,
                             right: 0,
                             height: tabsH,
-                            child: tabs,
+                            child: const ColoredBox(color: AppColors.white),
                           ),
                           Positioned(
                             top: 0,
@@ -232,6 +263,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               topBar: topBar,
                             ),
                           ),
+                          Positioned(
+                            top: height - tabsLift,
+                            left: 0,
+                            right: 0,
+                            height: tabsH,
+                            child: tabs,
+                          ),
                         ],
                       ),
                     );
@@ -247,10 +285,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 }
 
 class _HomeTopBar extends StatelessWidget {
-  const _HomeTopBar({required this.scale, required this.bagKey});
+  const _HomeTopBar({
+    required this.scale,
+    required this.bagKey,
+    required this.onSearch,
+  });
 
   final double scale;
   final GlobalKey bagKey;
+  final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -259,13 +302,14 @@ class _HomeTopBar extends StatelessWidget {
       padding: EdgeInsets.only(left: 26 * s, right: 18 * s),
       child: Row(
         children: [
-          Semantics(header: true, child: Text('florest', style: AppText.wordmark(s))),
+          Semantics(
+              header: true, child: Text('florest', style: AppText.wordmark(s))),
           const Spacer(),
           RoundIconButton(
-            icon: Icons.search_rounded,
+            icon: LineGlyph.search,
             semanticLabel: 'Search plants',
             scale: s,
-            onTap: () => HapticFeedback.selectionClick(),
+            onTap: onSearch,
           ),
           SizedBox(width: 4 * s),
           BagButton(anchorKey: bagKey, scale: s),
@@ -329,7 +373,8 @@ class _PlantListPageState extends ConsumerState<_PlantListPage> {
   void _armStagger() {
     _stagger = true;
     _staggerTimer?.cancel();
-    _staggerTimer = Timer(const Duration(milliseconds: 1100), () => _stagger = false);
+    _staggerTimer =
+        Timer(const Duration(milliseconds: 1100), () => _stagger = false);
   }
 
   void _report() => widget.onScrolled(widget.index, _controller.offset);
@@ -352,8 +397,10 @@ class _PlantListPageState extends ConsumerState<_PlantListPage> {
 
     return ListView.builder(
       controller: _controller,
-      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      padding: EdgeInsets.only(top: widget.topPadding, bottom: widget.bottomPadding),
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      padding:
+          EdgeInsets.only(top: widget.topPadding, bottom: widget.bottomPadding),
       itemExtent: PlantCard.extentFor(s),
       addAutomaticKeepAlives: false,
       itemCount: plants.length,

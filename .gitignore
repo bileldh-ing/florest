@@ -5,3 +5,9 @@ build/
 .packages
 *.iml
 .idea/
+
+coverage/
+.flutter-plugins-dependencies
+**/failures/
+__pycache__/
+*.pyc

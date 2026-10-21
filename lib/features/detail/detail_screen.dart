@@ -11,10 +11,12 @@ import '../../core/theme.dart';
 import '../../data/plant.dart';
 import '../../state/providers.dart';
 import '../../widgets/bag_button.dart';
+import '../../widgets/line_icon.dart';
 import '../../widgets/plant_image.dart';
 import '../../widgets/rotating_plant.dart';
 import '../../widgets/round_icon_button.dart';
 import '../../widgets/screen_frame.dart';
+import '../search/search_sheet.dart';
 import 'widgets/plant_info.dart';
 import 'widgets/side_rail.dart';
 
@@ -68,7 +70,8 @@ class _DetailScreenState extends ConsumerState<DetailScreen>
   ];
 
   /// User rotation (radians) layered over the idle spin, with inertia.
-  late final AnimationController _spin = AnimationController.unbounded(vsync: this);
+  late final AnimationController _spin =
+      AnimationController.unbounded(vsync: this);
 
   /// Pinch zoom 1.0–1.6, springs back to 1.
   late final AnimationController _zoom =
@@ -142,13 +145,19 @@ class _DetailScreenState extends ConsumerState<DetailScreen>
       _notch.value = i.toDouble();
       _change.value = 1;
     } else {
-      _notch.animateWith(
-          SpringSimulation(kSpring, _notch.value, i.toDouble(), _notch.velocity));
+      _notch.animateWith(SpringSimulation(
+          kSpring, _notch.value, i.toDouble(), _notch.velocity));
       _change.forward(from: 0);
     }
     _centerRail(i, animate: !reduce);
     _precacheAround(i);
     ref.read(selectedPlantProvider.notifier).select(widget.plants[i].id);
+  }
+
+  Future<void> _search() async {
+    final picked = await showPlantSearch(context);
+    if (picked == null || !mounted) return;
+    _select(widget.plants.indexOf(picked));
   }
 
   void _centerRail(int i, {bool animate = true}) {
@@ -157,7 +166,8 @@ class _DetailScreenState extends ConsumerState<DetailScreen>
     final target = (_railPad + i * _itemH + _itemH / 2 - _railViewport / 2)
         .clamp(pos.minScrollExtent, pos.maxScrollExtent);
     if (animate) {
-      _rail.animateTo(target, duration: AppDurations.slow, curve: const SpringCurve());
+      _rail.animateTo(target,
+          duration: AppDurations.slow, curve: const SpringCurve());
     } else {
       _rail.jumpTo(target);
     }
@@ -276,7 +286,8 @@ class _DetailScreenState extends ConsumerState<DetailScreen>
                 height: big,
                 child: Semantics(
                   image: true,
-                  label: '${_plant.name}. Swipe up or down to browse, drag to rotate, pinch to zoom',
+                  label:
+                      '${_plant.name}. Swipe up or down to browse, drag to rotate, pinch to zoom',
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onScaleStart: _onScaleStart,
@@ -304,7 +315,11 @@ class _DetailScreenState extends ConsumerState<DetailScreen>
                 left: 0,
                 right: 0,
                 height: 72 * s,
-                child: _DetailTopBar(scale: s, bagKey: _bagKey),
+                child: _DetailTopBar(
+                  scale: s,
+                  bagKey: _bagKey,
+                  onSearch: _search,
+                ),
               ),
               // Swipe right from the left edge to go back.
               Positioned(
@@ -352,7 +367,8 @@ class _BigPlant extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: zoom,
-      builder: (context, child) => Transform.scale(scale: zoom.value, child: child),
+      builder: (context, child) =>
+          Transform.scale(scale: zoom.value, child: child),
       child: Hero(
         tag: heroTag,
         flightShuttleBuilder: plantFlightShuttle(plant.asset),
@@ -365,7 +381,8 @@ class _BigPlant extends StatelessWidget {
               begin: Offset(0, 0.12 * direction),
               end: Offset.zero,
             ).animate(animation);
-            final turns = Tween<double>(begin: -0.06 * direction, end: 0).animate(animation);
+            final turns = Tween<double>(begin: -0.06 * direction, end: 0)
+                .animate(animation);
             return FadeTransition(
               opacity: animation,
               child: SlideTransition(
@@ -388,10 +405,15 @@ class _BigPlant extends StatelessWidget {
 }
 
 class _DetailTopBar extends StatelessWidget {
-  const _DetailTopBar({required this.scale, required this.bagKey});
+  const _DetailTopBar({
+    required this.scale,
+    required this.bagKey,
+    required this.onSearch,
+  });
 
   final double scale;
   final GlobalKey bagKey;
+  final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -412,7 +434,12 @@ class _DetailTopBar extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.chevron_left_rounded, size: 32 * s, color: AppColors.cream),
+                    LineIcon(
+                      LineGlyph.back,
+                      size: 28 * s,
+                      color: AppColors.cream,
+                      strokeWidth: 1.8,
+                    ),
                     SizedBox(width: 4 * s),
                     Text('Back', style: AppText.back(s)),
                   ],
@@ -422,10 +449,10 @@ class _DetailTopBar extends StatelessWidget {
           ),
           const Spacer(),
           RoundIconButton(
-            icon: Icons.search_rounded,
+            icon: LineGlyph.search,
             semanticLabel: 'Search plants',
             scale: s,
-            onTap: () => HapticFeedback.selectionClick(),
+            onTap: onSearch,
           ),
           SizedBox(width: 4 * s),
           BagButton(anchorKey: bagKey, scale: s),

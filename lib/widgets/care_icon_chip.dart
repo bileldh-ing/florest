@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import 'line_icon.dart';
 
 enum CareKind {
-  water(Icons.water_drop_outlined, 'Water'),
-  temperature(Icons.thermostat_outlined, 'Temperature'),
-  light(Icons.wb_sunny_outlined, 'Light');
+  water(LineGlyph.drop, 'Water'),
+  temperature(LineGlyph.thermometer, 'Temperature'),
+  light(LineGlyph.sun, 'Light');
 
   const CareKind(this.icon, this.label);
-  final IconData icon;
+  final LineGlyph icon;
   final String label;
 }
 
@@ -31,7 +32,12 @@ class CareIconChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadii.chip * size / 36),
           border: Border.all(color: AppColors.iconOutline, width: 1.3),
         ),
-        child: Icon(kind.icon, size: size * 0.44, color: AppColors.cream),
+        child: LineIcon(
+          kind.icon,
+          size: size * 0.5,
+          color: AppColors.cream,
+          strokeWidth: 1.5,
+        ),
       ),
     );
   }

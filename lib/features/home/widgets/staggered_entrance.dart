@@ -14,7 +14,8 @@ class StaggeredEntrance extends StatefulWidget {
 
   final bool enabled;
   final Duration delay;
-  final Widget Function(BuildContext context, Animation<double> entrance) builder;
+  final Widget Function(BuildContext context, Animation<double> entrance)
+      builder;
 
   @override
   State<StaggeredEntrance> createState() => _StaggeredEntranceState();
@@ -30,7 +31,8 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
   late final Animation<double> _curve =
       CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
   late final Animation<Offset> _slide =
-      Tween<Offset>(begin: const Offset(0.4, 0), end: Offset.zero).animate(_curve);
+      Tween<Offset>(begin: const Offset(0.4, 0), end: Offset.zero)
+          .animate(_curve);
   Timer? _timer;
 
   @override

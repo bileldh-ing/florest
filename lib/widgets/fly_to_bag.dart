@@ -76,7 +76,8 @@ class _FlyerState extends State<_Flyer> with SingleTickerProviderStateMixin {
     final p2 = widget.to;
     final p1 = Offset((p0.dx + p2.dx) / 2, math.min(p0.dy, p2.dy) - 140);
     final startSize = widget.from.width;
-    final image = PlantImage(asset: widget.asset, size: startSize, shadow: false);
+    final image =
+        PlantImage(asset: widget.asset, size: startSize, shadow: false);
 
     return IgnorePointer(
       child: Stack(
